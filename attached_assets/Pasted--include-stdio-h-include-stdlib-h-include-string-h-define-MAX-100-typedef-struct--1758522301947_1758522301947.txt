@@ -1,0 +1,163 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 100
+
+typedef struct {
+    int accNo;
+    char name[50];
+    float balance;
+} Account;
+
+Account accounts[MAX];
+int count = 0;
+
+// -------- Backend (Core Logic) --------
+int findAccount(int accNo) {
+    for (int i = 0; i < count; i++) {
+        if (accounts[i].accNo == accNo) return i;
+    }
+    return -1;
+}
+
+void createAccount(int accNo, char name[], float balance) {
+    if (findAccount(accNo) != -1) {
+        printf("\n⚠️ Account %d already exists!\n", accNo);
+        return;
+    }
+    accounts[count].accNo = accNo;
+    strcpy(accounts[count].name, name);
+    accounts[count].balance = balance;
+    count++;
+    printf("\n✅ Account created successfully!\n");
+}
+
+void deposit(int accNo, float amount) {
+    int idx = findAccount(accNo);
+    if (idx == -1) {
+        printf("\n⚠️ Account not found!\n");
+        return;
+    }
+    accounts[idx].balance += amount;
+    printf("\n💰 Deposit successful! New Balance: %.2f\n", accounts[idx].balance);
+}
+
+void withdraw(int accNo, float amount) {
+    int idx = findAccount(accNo);
+    if (idx == -1) {
+        printf("\n⚠️ Account not found!\n");
+        return;
+    }
+    if (accounts[idx].balance < amount) {
+        printf("\n⚠️ Insufficient funds!\n");
+        return;
+    }
+    accounts[idx].balance -= amount;
+    printf("\n💸 Withdrawal successful! New Balance: %.2f\n", accounts[idx].balance);
+}
+
+void transfer(int fromAcc, int toAcc, float amount) {
+    int i1 = findAccount(fromAcc);
+    int i2 = findAccount(toAcc);
+    if (i1 == -1 || i2 == -1) {
+        printf("\n⚠️ One or both accounts not found!\n");
+        return;
+    }
+    if (accounts[i1].balance < amount) {
+        printf("\n⚠️ Insufficient funds in source account!\n");
+        return;
+    }
+    accounts[i1].balance -= amount;
+    accounts[i2].balance += amount;
+    printf("\n🔄 Transfer successful!\n");
+    printf("Sender Balance: %.2f | Receiver Balance: %.2f\n",
+           accounts[i1].balance, accounts[i2].balance);
+}
+
+void checkBalance(int accNo) {
+    int idx = findAccount(accNo);
+    if (idx == -1) {
+        printf("\n⚠️ Account not found!\n");
+        return;
+    }
+    printf("\n📊 Account %d | %s | Balance: %.2f\n",
+           accounts[idx].accNo, accounts[idx].name, accounts[idx].balance);
+}
+
+void listAccounts() {
+    if (count == 0) {
+        printf("\n⚠️ No accounts available.\n");
+        return;
+    }
+    printf("\n===== All Accounts =====\n");
+    for (int i = 0; i < count; i++) {
+        printf("%d) %d | %s | Balance: %.2f\n",
+               i+1, accounts[i].accNo, accounts[i].name, accounts[i].balance);
+    }
+}
+
+// -------- Frontend (Console Menu) --------
+int main() {
+    int choice, accNo, toAcc;
+    char name[50];
+    float amount, balance;
+
+    while (1) {
+        printf("\n\n====== Bank Management System ======\n");
+        printf("1. Create Account\n");
+        printf("2. Deposit\n");
+        printf("3. Withdraw\n");
+        printf("4. Transfer\n");
+        printf("5. Check Balance\n");
+        printf("6. List All Accounts\n");
+        printf("0. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            printf("Enter Account No: "); scanf("%d", &accNo);
+            printf("Enter Name: "); scanf("%s", name);
+            printf("Enter Initial Balance: "); scanf("%f", &balance);
+            createAccount(accNo, name, balance);
+            break;
+
+        case 2:
+            printf("Enter Account No: "); scanf("%d", &accNo);
+            printf("Enter Amount: "); scanf("%f", &amount);
+            deposit(accNo, amount);
+            break;
+
+        case 3:
+            printf("Enter Account No: "); scanf("%d", &accNo);
+            printf("Enter Amount: "); scanf("%f", &amount);
+            withdraw(accNo, amount);
+            break;
+
+        case 4:
+            printf("Enter Sender Account No: "); scanf("%d", &accNo);
+            printf("Enter Receiver Account No: "); scanf("%d", &toAcc);
+            printf("Enter Amount: "); scanf("%f", &amount);
+            transfer(accNo, toAcc, amount);
+            break;
+
+        case 5:
+            printf("Enter Account No: "); scanf("%d", &accNo);
+            checkBalance(accNo);
+            break;
+
+        case 6:
+            listAccounts();
+            break;
+
+        case 0:
+            printf("\n👋 Exiting. Thank you!\n");
+            exit(0);
+
+        default:
+            printf("\n⚠️ Invalid choice! Try again.\n");
+        }
+    }
+    return 0;
+}
